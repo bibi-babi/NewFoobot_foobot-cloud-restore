@@ -154,6 +154,12 @@ Contributions, bug reports, and pull requests are warmly welcomed! Please read [
 
 ---
 
+## Related Projects & Acknowledgments
+
+- **[foobot-local](https://github.com/kerosix/foobot-local)** by [@kerosix](https://github.com/kerosix): A lightweight local Python solution to intercept and read Foobot data directly on your LAN. It served as an invaluable source of inspiration and technical reference for exploring the internal Wi-Fi module, UDP port 48899, and AT command set.
+
+---
+
 ## Security
 
 To report security vulnerabilities or sensitive issues, please refer to [SECURITY.md](SECURITY.md).

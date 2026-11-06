@@ -150,7 +150,13 @@ Per guide visive passo-passo con screenshot e procedure dettagliate per ogni fas
 
 ## Come Contribuire
 
-Contributi, segnalazioni di bug e suggerimenti di miglioramento sono benvenuti. Consulta il file [CONTRIBUTING.md](CONTRIBUTING.md) per informazioni sugli standard di codice, localizzazione multilingua e invio di pull request.
+Consulta il file [CONTRIBUTING.md](CONTRIBUTING.md) per informazioni sugli standard di codice, localizzazione multilingua e invio di pull request.
+
+---
+
+## Progetti Correlati e Ringraziamenti
+
+- **[foobot-local](https://github.com/kerosix/foobot-local)** di [@kerosix](https://github.com/kerosix): Soluzione leggera in Python per intercettare e leggere i dati del Foobot direttamente in rete locale (LAN). È stato una preziosa fonte di ispirazione e riferimento tecnico fondamentale per esplorare il modulo Wi-Fi, la porta UDP 48899 e i comandi AT del dispositivo.
 
 ---
 
