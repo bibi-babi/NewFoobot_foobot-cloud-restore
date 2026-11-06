@@ -80,3 +80,7 @@ logs/
 *.bak_*
 *.tmp
 *.temp
+
+# Local helper scripts
+PUSH_TO_GITHUB.bat
+
