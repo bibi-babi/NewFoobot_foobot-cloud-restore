@@ -1,0 +1,48 @@
+# ==============================================================================
+# robots.txt - NewFoobot Air Monitor (Ambiente Privato)
+# ==============================================================================
+
+# Impedisce l'indicizzazione e la scansione a tutti i motori di ricerca e web crawler
+User-agent: *
+Disallow: /
+
+# Blocco esplicito dei principali motori di ricerca
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Baiduspider
+Disallow: /
+
+User-agent: YandexBot
+Disallow: /
+
+# Blocco esplicito di scraper e bot AI
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Anthropic-AI
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /

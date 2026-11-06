@@ -1,0 +1,2 @@
+# This file ensures Git tracks the /app/ directory.
+# Deploy the contents of the 4_mobile_app/ directory into this folder on your web server.

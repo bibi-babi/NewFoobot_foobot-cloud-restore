@@ -1,0 +1,92 @@
+# ==============================================================================
+# NewFoobot Air Monitor - Hardening & Security Configuration (.htaccess)
+# ==============================================================================
+
+# 1. DISABILITAZIONE DIRECTORY LISTING
+# Impedisce ai visitatori di visualizzare l'elenco dei file presenti nelle cartelle
+<IfModule mod_autoindex.c>
+    Options -Indexes
+</IfModule>
+
+# 2. DISABILITAZIONE MULTIVIEWS
+# Evita ambiguità e risoluzioni impreviste dei percorsi URL
+Options -MultiViews
+
+# 3. PRIVACY TOTALE & BLOCCO INDICIZZAZIONE MOTORI DI RICERCA
+# Invia l'header HTTP X-Robots-Tag per impedire l'indicizzazione a qualsiasi crawler/motore
+<IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet, noimageindex"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "same-origin"
+    
+    # HSTS: Strict-Transport-Security attivo su connessioni HTTPS
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+</IfModule>
+
+# 4. BLOCCO ACCESSO A FILE NASCOSTI E DI SISTEMA
+# Blocca qualsiasi file che inizia con un punto (.git, .env, .htaccess, .user.ini, ecc.)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 5. BLOCCO ACCESSO DIRETTO A FILE RISERVATI, SCRIPT E DOCUMENTAZIONE
+# Impedisce il download via browser di dump SQL, log, file markdown, backup, chiavi e file template
+<FilesMatch "\.(sql|md|log|bak|sample\.php|ini|sh|py|key|crt|pem)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Protezione esplicita per schema.sql e config.sample.php
+<Files "schema.sql">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+<Files "config.sample.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# 6. BLOCCO ACCESSO DIRETTO AI FILE DI LINGUA (languages/)
+# I file .json delle lingue devono essere letti solo internamente da PHP, mai via HTTP
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^languages/.*$ - [F,L,NC]
+</IfModule>
+
+# 7. MITIGAZIONE VULNERABILITA RUNTIME PHP (se gestito da mod_php)
+<IfModule mod_php.c>
+    php_flag session.upload_progress.enabled Off
+    php_flag expose_php Off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag session.upload_progress.enabled Off
+    php_flag expose_php Off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag session.upload_progress.enabled Off
+    php_flag expose_php Off
+</IfModule>

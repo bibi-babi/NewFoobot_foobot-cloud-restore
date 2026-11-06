@@ -1,0 +1,41 @@
+# ==========================================
+# NewFoobot .gitattributes
+# ==========================================
+
+# Auto-detect text files and normalize line endings to LF on commit
+* text=auto
+
+# Linux / macOS shell scripts and configurations (LF required)
+*.sh text eol=lf
+*.command text eol=lf
+*.py text eol=lf
+*.php text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.sql text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.service text eol=lf
+.htaccess text eol=lf
+
+# Windows command and script files (CRLF required)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.tar.gz binary

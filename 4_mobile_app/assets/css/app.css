@@ -1,0 +1,2214 @@
+/* ==========================================================================
+   NewFoobot Air Quality PWA — Foglio di Stile Ufficiale v3.0
+   Grafica fedele ai modelli Home (Modello 1) e Dettaglio Grafico (Modello 2)
+   Nessun attributo style inline — Struttura modulare e responsive
+   ========================================================================== */
+
+:root {
+  --bg-page: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --icon-light: #64748b;
+
+  /* ========================================================================
+     SISTEMA COLORI UNIFICATO STATO QUALITÀ ARIA (WCAG AA + Pastello Chiaro)
+     1. OTTIMO (great) — Verde Smeraldo / Menta Pastello
+     2. BUONO  (good)  — Blu / Lavanda Azzurro Pastello
+     3. MEDIO  (fair)  — Ambra / Giallo Crema Pastello
+     4. SCARSO (poor)  — Corallo / Rosa Pastello
+     ======================================================================== */
+  --state-great-bg:     #e8f8ee;
+  --state-great-border: #8ac1ac; /* rgb(138, 193, 172) */
+  --state-great-text:   #0f7652; /* Contrasto WCAG AA > 5.4:1 */
+
+  --state-good-bg:      #e8effd;
+  --state-good-border:  #9ab5f8;
+  --state-good-text:    #1d4ed8; /* Contrasto WCAG AA > 6.5:1 */
+
+  --state-fair-bg:      #fef6d2;
+  --state-fair-border:  #ebd27a;
+  --state-fair-text:    #92400e; /* Contrasto WCAG AA > 6.8:1 */
+
+  --state-poor-bg:      #fdebed;
+  --state-poor-border:  #f2a7b0;
+  --state-poor-text:    #b91c1c; /* Contrasto WCAG AA > 6.4:1 */
+
+  /* Colori GPI Dinamici (aggiornati in base al livello OTTIMO/BUONO/MEDIO/SCARSO) */
+  --gpi-halo-bg: var(--state-great-bg);
+  --gpi-ring-track: #d5dff2;
+  --gpi-arc-stroke: var(--state-great-border);
+  --gpi-status-color: var(--state-great-text);
+
+  /* Colori Sensori Orizzontali (Pastello) */
+  --voc-pill-bg: var(--state-fair-bg);
+  --voc-border: var(--state-fair-border);
+  --pm-pill-bg: var(--state-good-bg);
+  --pm-border: var(--state-good-border);
+  --co2-pill-bg: var(--state-poor-bg);
+  --co2-border: var(--state-poor-border);
+
+  /* Colori Cerchi Inferiori (Temp / Hum) */
+  --env-track: #e9eef6;
+  --env-blue: #4f75e8;
+
+  /* Colori Controlli Filtro */
+  --blue-action: #1864e8;
+  --border-light: #e2e8f0;
+
+  --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Contenitore Mobile Centrato */
+.app-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background-color: var(--bg-page);
+  position: relative;
+  overflow-x: hidden;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));
+}
+
+/* Gestione Viste (Home vs Dettaglio) */
+.screen {
+  display: none;
+  width: 100%;
+  animation: fadeScreen 0.22s ease-out;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeScreen {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   TOP BAR (HOME)
+   ========================================================================== */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 8px 22px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--icon-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.icon-btn:hover,
+.icon-btn:active {
+  color: var(--text-secondary);
+  transform: scale(0.95);
+}
+
+.svg-icon-gear {
+  width: 30px;
+  height: 30px;
+}
+
+/* Selettore Dispositivo Pillola Custom (Foobot 01 v con menu a tendina arrotondato) */
+.custom-dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.device-pill-btn {
+  background-color: #ffffff;
+  border: 1.5px solid #b8c2cc;
+  border-radius: 999px;
+  padding: 5px 14px 5px 16px;
+  font-size: 14.5px;
+  font-weight: 400;
+  color: #7c8794;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.device-pill-btn:hover,
+.device-pill-btn:focus,
+.custom-dropdown-wrap.open .device-pill-btn {
+  border-color: #7f9fd8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.device-select-chevron {
+  width: 15px;
+  height: 15px;
+  color: #8c96a4;
+  transition: transform 0.2s ease;
+}
+
+.custom-dropdown-wrap.open .device-select-chevron {
+  transform: rotate(180deg);
+}
+
+/* Menu a Tendina Flottante con Bordi Arrotondati (Radius) */
+.custom-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  background-color: #ffffff;
+  border: 1.5px solid #e1e7ee;
+  border-radius: 14px;
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  animation: dropdownFadeIn 0.18s ease-out;
+}
+
+.custom-dropdown-wrap.open .custom-dropdown-menu {
+  display: block;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  padding: 9px 14px;
+  font-size: 14px;
+  color: #4b5563;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
+}
+
+.dropdown-item.selected {
+  background-color: #eaf1fb;
+  color: #2b5cb8;
+  font-weight: 600;
+}
+
+.hidden-select {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+/* ==========================================================================
+   SEZIONE HERO: CERCHIO GPI (INDICE INQUINAMENTO)
+   ========================================================================== */
+.gpi-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 22px;
+}
+
+.gpi-outer-halo {
+  width: 214px;
+  height: 214px;
+  border-radius: 50%;
+  background-color: var(--gpi-halo-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.35s ease;
+}
+
+.gpi-outer-halo.level-great { background-color: var(--state-great-bg); }
+.gpi-outer-halo.level-good  { background-color: var(--state-good-bg); }
+.gpi-outer-halo.level-fair  { background-color: var(--state-fair-bg); }
+.gpi-outer-halo.level-poor  { background-color: var(--state-poor-bg); }
+
+.gpi-outer-halo:active {
+  transform: scale(0.97);
+}
+
+.gpi-inner-disc {
+  width: 156px;
+  height: 156px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gpi-ring-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#gpiProgressArc {
+  stroke: var(--gpi-arc-stroke);
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.35s ease;
+}
+
+#gpiProgressArc.level-great { stroke: var(--state-great-border); }
+#gpiProgressArc.level-good  { stroke: var(--state-good-border); }
+#gpiProgressArc.level-fair  { stroke: var(--state-fair-border); }
+#gpiProgressArc.level-poor  { stroke: var(--state-poor-border); }
+
+.gpi-center-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.gpi-score-line {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 1;
+  margin-left: 8px;
+}
+
+.gpi-number {
+  font-size: 42px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: -1px;
+}
+
+.gpi-percent-sign {
+  font-size: 14px;
+  font-weight: 700;
+  color: #475569;
+  margin-top: 5px;
+  margin-left: 2px;
+}
+
+.gpi-status-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gpi-status-color);
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+  transition: color 0.35s ease;
+}
+
+.gpi-status-label.level-great { color: var(--state-great-text); }
+.gpi-status-label.level-good  { color: var(--state-good-text); }
+.gpi-status-label.level-fair  { color: var(--state-fair-text); }
+.gpi-status-label.level-poor  { color: var(--state-poor-text); }
+
+.gpi-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.gpi-section-title {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+
+.gpi-info-btn {
+  width: 22px;
+  height: 22px;
+  border-color: #8c96a4;
+  color: #6c7684;
+}
+
+/* ==========================================================================
+   SEZIONE FASCE ORIZZONTALI SENSORI (VOC, PM2.5, eCO2)
+   ========================================================================== */
+.sensors-bars-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 0 24px;
+  margin-bottom: 26px;
+}
+
+.sensor-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 92px;
+}
+
+/* Larghezze scalate come da Modello 1 */
+.sensor-row-voc {
+  width: 100%;
+}
+
+.sensor-row-pm {
+  width: 89%;
+}
+
+.sensor-row-co2 {
+  width: 78%;
+}
+
+.sensor-pill-bar {
+  width: calc(100% - 42px);
+  height: 58px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 12px;
+  padding-right: 56px;
+  cursor: pointer;
+}
+
+.pill-voc {
+  background-color: var(--voc-pill-bg);
+  transition: background-color 0.35s ease;
+}
+
+.pill-pm {
+  background-color: var(--pm-pill-bg);
+  transition: background-color 0.35s ease;
+}
+
+.pill-co2 {
+  background-color: var(--co2-pill-bg);
+  transition: background-color 0.35s ease;
+}
+
+/* Classi dinamiche unificate di stato per le barre orizzontali */
+.sensor-pill-bar.level-great { background-color: var(--state-great-bg); }
+.sensor-pill-bar.level-good  { background-color: var(--state-good-bg); }
+.sensor-pill-bar.level-fair  { background-color: var(--state-fair-bg); }
+.sensor-pill-bar.level-poor  { background-color: var(--state-poor-bg); }
+
+/* Pulsante Circolare "i" dentro la fascia (Contrasto WCAG AA garantito) */
+.sensor-info-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid #475569;
+  background: transparent;
+  color: #334155;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.sensor-info-btn:hover,
+.sensor-info-btn:active {
+  background-color: rgba(0, 0, 0, 0.06);
+  transform: scale(0.94);
+}
+
+.sensor-bar-label {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cerchio Valore a Destra della Fascia */
+.sensor-value-circle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 94px;
+  height: 94px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.35s ease;
+}
+
+.sensor-value-circle:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.circle-voc {
+  border: 4.5px solid var(--voc-border);
+}
+
+.circle-pm {
+  border: 4.5px solid var(--pm-border);
+}
+
+.circle-co2 {
+  border: 4.5px solid var(--co2-border);
+}
+
+/* Classi dinamiche unificate di stato per i cerchi valore */
+.sensor-value-circle.level-great { border-color: var(--state-great-border); }
+.sensor-value-circle.level-good  { border-color: var(--state-good-border); }
+.sensor-value-circle.level-fair  { border-color: var(--state-fair-border); }
+.sensor-value-circle.level-poor  { border-color: var(--state-poor-border); }
+
+.circle-number {
+  font-size: 25px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.05;
+}
+
+.circle-unit {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #475569;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   SEZIONE INFERIORE: TEMPERATURA E UMIDITÀ
+   ========================================================================== */
+.bottom-env-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 34px;
+  padding: 0 20px;
+}
+
+.env-gauge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.env-circle-btn {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+
+.env-circle-btn:active {
+  transform: scale(0.96);
+}
+
+.env-ring-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.env-circle-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.env-icon-svg {
+  width: 24px;
+  height: 36px;
+}
+
+.env-value-line {
+  font-size: 21px;
+  font-weight: 600;
+  color: #64707d;
+  letter-spacing: -0.3px;
+}
+
+.env-chevron-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.env-chevron-btn svg {
+  width: 34px;
+  height: 15px;
+  transition: transform 0.2s ease;
+}
+
+.env-chevron-btn:active svg {
+  transform: translateY(3px);
+}
+
+/* ==========================================================================
+   SCHERMATA 2: DETTAGLIO SENSORE E GRAFICO A LINEE (Modello 2)
+   ========================================================================== */
+.detail-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 8px 14px;
+}
+
+.back-chevron-btn {
+  background: none;
+  border: none;
+  color: #cad5e8;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+
+.back-chevron-btn:hover,
+.back-chevron-btn:active {
+  color: var(--env-blue);
+  transform: translateX(-2px);
+}
+
+.back-chevron-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Selettore Sensore a Tendina nell'Header Dettaglio */
+.detail-sensor-dropdown-wrap {
+  flex: 1;
+  margin: 0 8px;
+  position: relative;
+}
+
+.detail-sensor-pill-btn {
+  background-color: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  transition: all 0.18s ease;
+}
+
+.detail-sensor-pill-btn:hover,
+.detail-sensor-pill-btn:focus,
+.detail-sensor-dropdown-wrap.open .detail-sensor-pill-btn {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+#detailSensorTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detail-sensor-menu {
+  left: 0;
+  right: auto;
+  min-width: 240px;
+}
+
+.detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.detail-info-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.6px solid #8c96a4;
+  background: transparent;
+  color: #6c7684;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Capsula Centrale Valore in Schermata 2 */
+.detail-hero-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 14px;
+}
+
+.detail-value-capsule {
+  min-width: 220px;
+  height: 76px;
+  border-radius: 999px;
+  background-color: #ffffff;
+  border: 6px solid var(--voc-border);
+  padding: 0 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  transition: border-color 0.35s ease, background-color 0.35s ease;
+}
+
+.detail-value-capsule.level-great { border-color: var(--state-great-border); }
+.detail-value-capsule.level-good  { border-color: var(--state-good-border); }
+.detail-value-capsule.level-fair  { border-color: var(--state-fair-border); }
+.detail-value-capsule.level-poor  { border-color: var(--state-poor-border); }
+
+.detail-capsule-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.detail-capsule-unit {
+  font-size: 19px;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1;
+  transform: translateY(2px);
+}
+
+.detail-timestamp-line {
+  font-size: 14.5px;
+  color: #475569;
+  text-align: center;
+}
+
+.detail-timestamp-line strong {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* ==========================================================================
+   FILTRI GRAFICO SAAS MODERNO (CARD, TIME PILLS, NAV & DATE COLLAPSIBLE)
+   ========================================================================== */
+.saas-filter-section {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.saas-filter-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 2px 10px -3px rgba(6, 81, 237, 0.08);
+}
+
+/* Riga Superiore: Pills Periodi Orizzontali Scrollabili */
+.saas-time-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  margin: 0 -4px;
+  padding: 0 4px 2px 4px;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.saas-pill-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border: none;
+  background-color: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.saas-pill-btn:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+.saas-pill-btn:active {
+  transform: scale(0.96);
+}
+
+.saas-pill-btn.active {
+  background-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+/* Seconda Riga: Toggle Calendario & Barra Navigazione Temporale */
+.saas-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.saas-cal-toggle-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.saas-cal-toggle-btn:hover,
+.saas-cal-toggle-btn.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.saas-cal-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.saas-icon-cal {
+  width: 20px;
+  height: 20px;
+}
+
+/* Controllo Navigazione Temporale (Sinistra / Status / Destra) */
+.saas-time-nav-control {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  height: 44px;
+  padding: 0 4px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.saas-nav-arrow {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.saas-nav-arrow svg {
+  width: 18px;
+  height: 18px;
+}
+
+.saas-nav-arrow:hover:not(:disabled) {
+  background-color: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.saas-nav-arrow:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.saas-nav-arrow.disabled,
+.saas-nav-arrow:disabled {
+  color: #cbd5e1;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.saas-time-status-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  padding: 2px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 38px;
+}
+
+/* Layout Data e Orario nel box navigazione temporale (#labelTimeNavStatus) */
+.time-nav-stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+}
+
+.time-nav-main-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.time-nav-sub-time {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-top: 1px;
+}
+
+.time-nav-stacked-split {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  line-height: 1.15;
+}
+
+.time-nav-split-col {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.time-nav-split-col .time-nav-d {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.time-nav-split-col .time-nav-t {
+  font-size: 10px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-top: 1px;
+}
+
+.time-nav-arrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.saas-icon-clock {
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+/* Sezione Collassabile Intervallo Date Personalizzato */
+.saas-collapsible-dates {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-in-out;
+}
+
+.saas-collapsible-dates.open {
+  max-height: 260px;
+  opacity: 1;
+}
+
+.saas-dates-content {
+  padding-top: 14px;
+  margin-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.saas-date-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.saas-floating-input {
+  position: relative;
+}
+
+.saas-floating-label {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  background-color: #ffffff;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.saas-datetime-field {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #1e293b;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.saas-datetime-field:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.saas-date-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.saas-btn-apply {
+  flex: 1;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 11px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  transition: all 0.15s ease;
+}
+
+.saas-btn-apply:hover {
+  background-color: #2563eb;
+}
+
+.saas-btn-apply:active {
+  transform: scale(0.98);
+}
+
+.saas-btn-cancel {
+  padding: 11px 18px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.saas-btn-cancel:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.saas-btn-cancel:active {
+  transform: scale(0.98);
+}
+
+/* Viewport e Contenitore Grafico con Barra Asse Y Fissa e Linea di Scan Valore */
+.detail-chart-viewport {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: calc(100% - 24px);
+  margin: 0 auto 20px auto;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.detail-chart-scroll-wrap {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 0 8px 0;
+}
+
+.detail-chart-inner {
+  min-width: 680px;
+  height: 360px;
+  min-height: 360px;
+  max-height: 360px;
+  position: relative;
+}
+
+.detail-chart-inner canvas {
+  width: 100% !important;
+  height: 360px !important;
+  max-height: 360px !important;
+}
+
+/* Barra Fissa dei Valori Asse Y (all'Estremo Destro del Box, sempre visibile e attiva) */
+.detail-chart-yaxis-bar {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  height: 382px;
+  min-height: 382px;
+  max-height: 382px;
+  flex-shrink: 0;
+  position: relative;
+  background-color: #ffffff;
+  border-left: 1px solid #f1f5f9;
+  z-index: 22;
+  display: block;
+  padding: 14px 0 8px 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.detail-chart-yaxis-bar canvas {
+  width: 60px !important;
+  height: 360px !important;
+  max-height: 360px !important;
+  display: block;
+}
+
+/* Linea di Scan Valore Verticale (a 38px ~ 1cm dal bordo destro dell'area scorrevole del grafico) */
+.chart-scanline {
+  position: absolute;
+  top: 0;
+  height: 348px; /* termina esattamente sulla linea dell'asse X senza mai allungarsi */
+  bottom: auto;
+  right: 98px;  /* 60px barra asse Y fissa + 38px margine scanline */
+  width: 1.5px;
+  background-color: #cbd5e1; /* grigio pallido elegante */
+  z-index: 25;
+  pointer-events: none;
+}
+
+/* Badge Valore Chiaro con Bordino Molto Leggero (Valore + Orario) */
+.chart-scan-badge {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(4px);
+  border: 1px solid #e2e8f0; /* bordino molto leggero */
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.15;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.scan-badge-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.2px;
+}
+
+.scan-badge-time {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.scan-badge-date {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 1px;
+  letter-spacing: -0.1px;
+}
+
+/* Bordi e Colori Dinamici Badge Scan in base al Valore Rilevato */
+.chart-scan-badge.scan-great { border-color: #8ac1ac; }
+.chart-scan-badge.scan-great .scan-badge-value { color: #0f7652; }
+.chart-scan-badge.scan-good  { border-color: #9ab5f8; }
+.chart-scan-badge.scan-good .scan-badge-value  { color: #1d4ed8; }
+.chart-scan-badge.scan-fair  { border-color: #ebd27a; }
+.chart-scan-badge.scan-fair .scan-badge-value  { color: #92400e; }
+.chart-scan-badge.scan-poor  { border-color: #f2a7b0; }
+.chart-scan-badge.scan-poor .scan-badge-value  { color: #b91c1c; }
+
+.chart-scan-pip {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: #94a3b8;
+  border-radius: 50%;
+}
+
+/* Link Sito Originale nella Sidebar */
+.info-row-site {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 13px;
+}
+
+.site-origin-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 12.5px;
+  text-decoration: none;
+  background-color: #eff6ff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-origin-link:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.external-link-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   SIDEBAR IMPOSTAZIONI (Slide-over)
+   ========================================================================== */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 300px;
+  max-width: 84vw;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #ffffff;
+  box-shadow: 8px 0 30px rgba(0, 0, 0, 0.14);
+  z-index: 450;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sidebar-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+}
+
+.sidebar-title-wrap h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sidebar-select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.segmented-control {
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+}
+
+.seg-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.seg-btn.active {
+  background-color: #ffffff;
+  color: var(--blue-action);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar-info-card {
+  background-color: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.info-key {
+  color: #64748b;
+}
+
+.info-val {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-badge-demo {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+}
+
+.sidebar-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+}
+
+.app-version-text {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   MODALE INFORMAZIONI SENSORE (Click su "i")
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 360px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-header h3 {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.modal-desc {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.modal-thresholds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.threshold-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.th-band-great { background-color: var(--state-great-bg); color: var(--state-great-text); border: 1.5px solid var(--state-great-border); }
+.th-band-good  { background-color: var(--state-good-bg);  color: var(--state-good-text);  border: 1.5px solid var(--state-good-border); }
+.th-band-fair  { background-color: var(--state-fair-bg);  color: var(--state-fair-text);  border: 1.5px solid var(--state-fair-border); }
+.th-band-poor  { background-color: var(--state-poor-bg);  color: var(--state-poor-text);  border: 1.5px solid var(--state-poor-border); }
+
+/* ==========================================================================
+   BANNER SUPERIORE PWA: SCARICA E INSTALLA APP
+   ========================================================================== */
+.pwa-install-banner {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  z-index: 50;
+  animation: slideDownBanner 0.25s ease-out;
+}
+
+.pwa-install-banner.visible {
+  display: flex;
+}
+
+@keyframes slideDownBanner {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.install-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.install-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #60a5fa;
+}
+
+.install-banner-icon svg,
+.install-banner-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.install-banner-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.install-banner-text strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.install-banner-text span {
+  font-size: 11px;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.install-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-install-pwa {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-install-pwa:hover {
+  background-color: #2563eb;
+}
+
+.btn-install-pwa:active {
+  transform: scale(0.95);
+}
+
+.btn-dismiss-install {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.btn-dismiss-install:hover {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   SCHERMATA AUTENTICAZIONE & CONNESSIONE SERVER (#screenAuth)
+   ========================================================================== */
+#screenAuth {
+  padding: 24px 20px 40px 20px;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 40px);
+}
+
+#screenAuth.active {
+  display: flex;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 390px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+  padding: 26px 22px;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.auth-icon-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+}
+
+.auth-icon-circle svg,
+.auth-icon-circle img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.auth-title {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.auth-subtitle {
+  font-size: 13.5px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.auth-tab-switch {
+  display: flex;
+  background-color: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.auth-tab-btn.active {
+  background-color: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.auth-form-panel {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.auth-form-panel.active {
+  display: flex;
+}
+
+.auth-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.auth-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.auth-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 12px 14px 12px 38px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+  transition: all 0.18s ease;
+  box-sizing: border-box;
+}
+
+.auth-input:focus {
+  background-color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.auth-ticket-input {
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.auth-field-hint {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.auth-submit-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.auth-submit-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-1px);
+}
+
+.auth-submit-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-alert-box {
+  display: none;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.auth-alert-box.alert-error {
+  display: block;
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.auth-alert-box.alert-success {
+  display: block;
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.auth-alert-box.alert-info {
+  display: block;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Pulsante Disconnessione Sidebar */
+.btn-sidebar-logout {
+  width: 100%;
+  padding: 11px 14px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-sidebar-logout:hover {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Badge Utente Collegato nella Sidebar */
+.user-connected-badge {
+  font-weight: 700;
+  color: #1d4ed8;
+  background-color: #eff6ff;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid #bfdbfe;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   SELETTORE FOOBOT CON PALLINO DI STATO + ICONA PAGINA DATI CONNESSIONE
+   ========================================================================== */
+.top-bar-device-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pallino Stato Dispositivo (Verde = Connesso/Online, Rosso = Disconnesso/Offline) */
+.device-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  background-color: #94a3b8;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.device-status-dot.online {
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.device-status-dot.offline {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.device-status-dot.nodata {
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+/* Pulsante Icona a lato del selettore Foobot per aprire la pagina Dati Connessione */
+.device-conn-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #ffffff;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.device-conn-icon-btn:hover,
+.device-conn-icon-btn:focus {
+  border-color: #3b82f6;
+  color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.device-conn-icon-btn:active {
+  transform: scale(0.95);
+}
+
+.device-conn-icon-btn.spinning svg {
+  animation: spinRefresh 0.7s linear infinite;
+}
+
+@keyframes spinRefresh {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Riga Selettore Dispositivo nella Sidebar con Pallino Stato + Icona Pagina Dispositivi */
+.sidebar-device-select-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-select-with-dot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-select-with-dot .device-status-dot {
+  position: absolute;
+  left: 11px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sidebar-select-with-dot .sidebar-select {
+  padding-left: 28px;
+}
+
+/* Elemento Menu Dropdown con Pallino di Stato Online/Offline */
+.dropdown-item-with-dot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   SCHERMATA DEDICATA DATI DI CONNESSIONE FOOBOT (#screenDevices)
+   Grafica e spaziatura coerenti con la schermata Dettaglio Sensore
+   ========================================================================== */
+.devices-screen-header-title {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
+}
+
+.svg-icon-refresh {
+  width: 24px;
+  height: 24px;
+}
+
+.devices-refresh-btn.spinning svg {
+  animation: spinRefresh 0.7s linear infinite;
+}
+
+.devices-cards-container {
+  padding: 16px 26px 36px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.device-dropdown-card {
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px 22px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.device-dropdown-card.active-device-card {
+  border-color: #93c5fd;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+}
+
+.device-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.device-dropdown-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.device-dropdown-header-title {
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.device-pill-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.device-pill-badge.online {
+  background-color: rgba(16, 185, 129, 0.14);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.device-pill-badge.offline {
+  background-color: rgba(239, 68, 68, 0.14);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.device-dropdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  font-size: 14.5px;
+  gap: 14px;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.device-dropdown-row:last-of-type {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.device-dropdown-label {
+  color: #475569;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.device-dropdown-val {
+  color: #0f172a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14.5px;
+  font-weight: 600;
+  text-align: right;
+  word-break: break-all;
+}
+
+.device-dropdown-val.conn-active {
+  color: #10b981;
+}
+
+.device-dropdown-val.conn-inactive {
+  color: #ef4444;
+}
+
+.device-dropdown-sub {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.device-dropdown-sub.reason-alert {
+  color: #ef4444;
+}
+
+.devices-loading-state {
+  text-align: center;
+  padding: 36px 16px;
+  color: #64748b;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
