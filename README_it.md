@@ -149,6 +149,17 @@ Per guide visive passo-passo con screenshot e procedure dettagliate per ogni fas
 
 ---
 
+## Registro Modifiche (Changelog)
+
+### Ultima Versione: [1.0.1] — 16/11/2026 (Aggiornamento di Stabilità & Bugfix)
+- **1_foobot_device_config (Correzione Opzione 3)**: Riprogettata integralmente la procedura di riattivazione dopo assenza corrente negli script Windows, macOS e Linux. Rimosso il passaggio temporaneo in DHCP e il riavvio che provocavano l'acquisizione del DNS del router e la memorizzazione in cache del vecchio IP AWS dismesso. Ora legge direttamente il DNS custom via comandi AT (`AT+WSDNS`), fissa l'IP statico, reinizializza il canale Socket B (TCP 1883) e verifica lo stato effettivo `TCPLKB=+ok=on`.
+- **2_mqtt_broker_bridge_server (bridge.py)**: Corretta la chiamata HTTP per l'allerta di disconnessione con parametri strutturati `params={"key": API_KEY}` (codifica URL automatica conforme a RFC 3986 per gestire chiavi con caratteri speciali come `#`) e aggiunta dell'header di sicurezza `X-Api-Key`.
+- **3_web_dashboard_and_database (cron_events.php)**: Potenziata l'autenticazione per l'esecuzione dei cron job con supporto all'header HTTP `X-Api-Key`, verifica multi-parametro e compatibilità estesa con ambienti FastCGI cPanel.
+
+👉 Per la cronologia dettagliata di tutte le versioni e le note di rilascio complete, consulta il file **[CHANGELOG.md](CHANGELOG.md)**.
+
+---
+
 ## Come Contribuire
 
 Consulta il file [CONTRIBUTING.md](CONTRIBUTING.md) per informazioni sugli standard di codice, localizzazione multilingua e invio di pull request.

@@ -149,6 +149,17 @@ For detailed, step-by-step visual guides covering each stage of the process, vis
 
 ---
 
+## Changelog & Release History
+
+### Latest Release: [1.0.1] — 2026-11-16 (Stability & Bugfix Update)
+- **1_foobot_device_config (Option 3 Fix)**: Completely redesigned the post-power-cut reactivation logic across Windows, macOS, and Linux scripts. Eliminated the temporary DHCP switch and reboot that caused the module to acquire the router's default DNS and cache the dead legacy AWS server IP. It now reads the custom DNS directly via AT commands (`AT+WSDNS`), locks the static IP, resets TCP Socket B (1883), and validates `TCPLKB=+ok=on`.
+- **2_mqtt_broker_bridge_server (bridge.py)**: Fixed HTTP requests in `trigger_cpanel_offline_alert` using `params={"key": API_KEY}` for automatic RFC 3986 URL encoding, preventing parameter truncation if the API key contains `#`, and added `X-Api-Key` HTTP header support.
+- **3_web_dashboard_and_database (cron_events.php)**: Enhanced cron authentication with `X-Api-Key` header reading, multi-parameter fallback, and expanded CLI environment detection for cPanel FastCGI hosting.
+
+👉 For the complete historical changelog across all versions, see **[CHANGELOG.md](CHANGELOG.md)**.
+
+---
+
 ## Contributing
 
 Contributions, bug reports, and pull requests are warmly welcomed! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on code style, multi-language localization, and submission guidelines.
