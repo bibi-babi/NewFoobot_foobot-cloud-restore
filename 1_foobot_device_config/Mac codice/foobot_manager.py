@@ -159,10 +159,10 @@ I18N = {
         "OPT_REACT_DESC_3": "e blocca l'uscita su Internet del Foobot rimasto con IP statico (lasciando TCPLKB su 'off').",
         "OPT_REACT_STEPS_HD": "OPERAZIONI ESEGUITE IN AUTOMATICO DAL PROGRAMMA:",
         "OPT_REACT_STEP_1": " 1. Legge dalla memoria del Foobot l'IP del Server DNS gia registrato in precedenza.",
-        "OPT_REACT_STEP_2": " 2. Attiva temporaneamente il DHCP e riavvia il Foobot (AT+Z per 16 secondi) affinche",
-        "OPT_REACT_STEP_3": "    il router di casa registri e autorizzi nuovamente il sensore sulla rete locale.",
-        "OPT_REACT_STEP_4": " 3. Rileva l'IP locale assegnato dal router e lo blocca nuovamente come IP statico.",
-        "OPT_REACT_STEP_5": " 4. Ripristina lo stesso IP DNS salvato in precedenza e riapre il collegamento Cloud (TCPLKB=on).",
+        "OPT_REACT_STEP_2": " 2. Rileva i parametri di rete attuali (AT+WANN) e fissa la configurazione IP statica",
+        "OPT_REACT_STEP_3": "    in memoria Flash NVRAM per impedire al router di sovrascrivere il DNS.",
+        "OPT_REACT_STEP_4": " 3. Chiude e azzera il vecchio socket TCP Cloud rimasto bloccato.",
+        "OPT_REACT_STEP_5": " 4. Riapplica automaticamente lo stesso IP DNS salvato e riapre il collegamento Cloud (TCPLKB=on).",
         "OPT_REACT_SAVED_DNS": "  -> Server DNS registrato rilevato nel Foobot : {0}",
         "OPT_REACT_NO_DNS": "ATTENZIONE: Nel Foobot e presente il DNS di fabbrica ({0}). Configura prima il DNS con l'Opzione 2.",
         "OPT_REACT_CONFIRM": "Confermi l'avvio della riattivazione post-sospensione corrente? [S = Si / N = No]",
@@ -170,6 +170,7 @@ I18N = {
         "OPT_REACT_DISC": "Fase 2/3: Ricerca del Foobot sulla rete locale per verificare l'IP assegnato dal router...",
         "OPT_REACT_RESYNC": "Fase 3/3: Fissaggio IP statico, riattivazione DNS ({0}) e apertura connessione Cloud...",
         "OPT_REACT_DONE": "RIATTIVAZIONE COMPLETATA! Il Foobot e nuovamente connesso al Cloud (TCPLKB: {0}).",
+        "OPT_REACT_ERR": "Riattivazione non completata: connessione Cloud non attiva (TCPLKB: {0}).",
         "OPT_REACT_CANCEL": "Riattivazione annullata. Nessun parametro modificato.",
         "OPT3_TITLE": "CONFIGURAZIONE NUOVA RETE WI-FI (PAIRING SSID & PASSWORD)",
         "OPT3_INFO1": "Questa procedura consente di associare il Foobot a una nuova rete Wi-Fi di casa,",
@@ -327,10 +328,10 @@ I18N = {
         "OPT_REACT_DESC_3": "Internet access for Foobot's static IP (leaving the Cloud connection TCPLKB on 'off').",
         "OPT_REACT_STEPS_HD": "AUTOMATIC STEPS PERFORMED BY THIS PROGRAM:",
         "OPT_REACT_STEP_1": " 1. Reads the previously registered DNS Server IP from Foobot's internal memory.",
-        "OPT_REACT_STEP_2": " 2. Temporarily enables DHCP and reboots Foobot (AT+Z for 16 seconds) so your home",
-        "OPT_REACT_STEP_3": "    router registers and re-authorizes the sensor on the local network.",
-        "OPT_REACT_STEP_4": " 3. Detects the local IP assigned by the router and locks it again as a static IP.",
-        "OPT_REACT_STEP_5": " 4. Reapplies the previously saved DNS IP and reopens the Cloud connection (TCPLKB=on).",
+        "OPT_REACT_STEP_2": " 2. Reads current network parameters (AT+WANN) and locks the static IP configuration",
+        "OPT_REACT_STEP_3": "    in Flash NVRAM to prevent the router from overwriting the DNS.",
+        "OPT_REACT_STEP_4": " 3. Gracefully closes and clears the previous stuck Cloud TCP socket.",
+        "OPT_REACT_STEP_5": " 4. Automatically reapplies the saved DNS IP and reopens the Cloud connection (TCPLKB=on).",
         "OPT_REACT_SAVED_DNS": "  -> Previously saved DNS Server detected in Foobot : {0}",
         "OPT_REACT_NO_DNS": "WARNING: Factory DNS ({0}) is currently set in Foobot. Please configure your DNS with Option 2 first.",
         "OPT_REACT_CONFIRM": "Do you confirm starting the post-power-outage reactivation? [Y = Yes / N = No]",
@@ -338,6 +339,7 @@ I18N = {
         "OPT_REACT_DISC": "Step 2/3: Searching for Foobot on local network to verify the router-assigned IP...",
         "OPT_REACT_RESYNC": "Step 3/3: Locking static IP, restoring DNS ({0}) and opening Cloud connection...",
         "OPT_REACT_DONE": "REACTIVATION COMPLETED! Foobot is connected to the Cloud again (TCPLKB: {0}).",
+        "OPT_REACT_ERR": "Reactivation incomplete: Cloud connection is not active (TCPLKB: {0}).",
         "OPT_REACT_CANCEL": "Reactivation cancelled. No parameters were modified.",
         "OPT3_TITLE": "CONFIGURE NEW HOME WI-FI NETWORK (SSID & PASSWORD PAIRING)",
         "OPT3_INFO1": "This procedure connects your Foobot to a new home Wi-Fi network,",
@@ -1006,64 +1008,76 @@ def main():
             confirm = read_input(t("OPT_REACT_CONFIRM"))
 
             if is_confirmed(confirm):
+                new_dns_ip = saved_dns_val
                 print("")
-                write_info(t("OPT_REACT_WAIT"))
-                invoke_foobot_at_session(target_ip, ["AT+WANN=DHCP", "AT+Z"], show_verbose=True)
-                for sec in range(1, 17):
-                    if sec == 1 or sec % 4 == 0:
-                        write_step(t("WAIT_REBOOT_STEP", sec, 16))
-                    time.sleep(1)
+                write_info(t("OPT2_PRE_READ"))
+                pre_read = invoke_foobot_at_session(target_ip, ["AT+WANN"], show_verbose=True)
+                wann_raw = pre_read.get("AT+WANN", "")
+
+                cmd_static_wann = None
+                if wann_raw.startswith("+ok="):
+                    clean_wann = wann_raw[4:]
+                    wann_parts = clean_wann.split(",")
+                    if len(wann_parts) >= 4:
+                        curr_ip   = wann_parts[1].strip()
+                        curr_mask = wann_parts[2].strip()
+                        curr_gw   = wann_parts[3].strip()
+                        if test_is_valid_ipv4(curr_ip) and test_is_valid_ipv4(curr_mask) and test_is_valid_ipv4(curr_gw):
+                            cmd_static_wann = f"AT+WANN=static,{curr_ip},{curr_mask},{curr_gw}"
+                            write_info(t("OPT2_LAN_DETECTED", curr_ip, curr_mask, curr_gw))
+                            write_info(t("OPT2_STATIC_APPLY", cmd_static_wann))
+
+                if not cmd_static_wann and test_is_valid_ipv4(target_ip) and target_ip != FOOBOT_HOTSPOT_IP:
+                    octets = target_ip.split(".")
+                    fallback_gw = f"{octets[0]}.{octets[1]}.{octets[2]}.1"
+                    cmd_static_wann = f"AT+WANN=static,{target_ip},255.255.255.0,{fallback_gw}"
+                    write_info(t("OPT2_LAN_DEDUCED", target_ip, fallback_gw))
+                    write_info(t("OPT2_STATIC_APPLY", cmd_static_wann))
+
                 print("")
+                write_info(t("OPT2_WRITE_START"))
+                cmd_write_dns = f"AT+WSDNS={new_dns_ip}"
+                cmd_verify_dns = "AT+WSDNS"
 
-                write_info(t("OPT_REACT_DISC"))
-                renewed_lan = send_discovery_broadcast("255.255.255.255", FOOBOT_UDP_PORT, 5.0)
-                if renewed_lan != "TIMEOUT" and not renewed_lan.startswith("ERROR"):
-                    r_parts = renewed_lan.split(",")
-                    if len(r_parts) >= 1 and test_is_valid_ipv4(r_parts[0].strip()):
-                        target_ip = r_parts[0].strip()
-                        device["IP"] = target_ip
-                        write_success(t("OPT2_NEW_IP", target_ip))
+                if cmd_static_wann:
+                    write_info(t("OPT2_STEP1"))
+                    res_wann = invoke_foobot_at_session(target_ip, [cmd_static_wann, "AT+WANN"], show_verbose=True)
+                    write_success(t("OPT2_WANN_SAVED", res_wann.get("AT+WANN", "N/D")))
+                    time.sleep(0.50)
 
-                write_info(t("OPT_REACT_RESYNC", saved_dns_val))
-                wann_check = invoke_foobot_at_session(target_ip, ["AT+WANN"], show_verbose=True)
-                static_cmd = None
-                raw_w = wann_check.get("AT+WANN", "")
-                if raw_w.startswith("+ok="):
-                    w_parts = raw_w[4:].split(",")
-                    if len(w_parts) >= 4:
-                        c_ip   = w_parts[1].strip()
-                        c_mask = w_parts[2].strip()
-                        c_gw   = w_parts[3].strip()
-                        if test_is_valid_ipv4(c_ip) and test_is_valid_ipv4(c_mask) and test_is_valid_ipv4(c_gw):
-                            static_cmd = f"AT+WANN=static,{c_ip},{c_mask},{c_gw}"
-                if not static_cmd and test_is_valid_ipv4(target_ip) and target_ip != FOOBOT_HOTSPOT_IP:
-                    octs = target_ip.split(".")
-                    fb_gw = f"{octs[0]}.{octs[1]}.{octs[2]}.1"
-                    static_cmd = f"AT+WANN=static,{target_ip},255.255.255.0,{fb_gw}"
-
-                sync_cmds = []
-                if static_cmd:
-                    sync_cmds.append(static_cmd)
-                sync_cmds.extend([
+                write_info(t("OPT2_STEP2", new_dns_ip))
+                reconnect_cmds = [
                     "AT+TCPDISB=off",
-                    f"AT+WSDNS={saved_dns_val}",
+                    cmd_write_dns,
                     "AT+SOCKB=NONE",
                     "AT+SOCKB=TCP,1883,broker-gw-nc.foobot.io",
                     "AT+TCPDISB=on",
-                    "AT+WANN",
-                    "AT+WSDNS",
+                    cmd_verify_dns,
                     "AT+SOCKB",
                     "AT+TCPLKB"
-                ])
-                sync_res = invoke_foobot_at_session(target_ip, sync_cmds, show_verbose=True)
-                final_tcp = sync_res.get("AT+TCPLKB", "N/D")
-                if "+ok=on" not in final_tcp:
+                ]
+                write_session = invoke_foobot_at_session(target_ip, reconnect_cmds, show_verbose=True)
+
+                write_outcome = write_session.get(cmd_write_dns, "")
+                verify_dns_outcome = write_session.get(cmd_verify_dns, "")
+                verify_sock_outcome = write_session.get("AT+SOCKB", "")
+                verify_tcp_outcome = write_session.get("AT+TCPLKB", "")
+
+                if "+ok=on" not in verify_tcp_outcome:
                     write_step(t("WAIT_FINAL_TCPLKB"))
                     time.sleep(5)
-                    recheck_tcp = invoke_foobot_at_session(target_ip, ["AT+TCPLKB"], show_verbose=True)
-                    if "+ok" in recheck_tcp.get("AT+TCPLKB", ""):
-                        final_tcp = recheck_tcp["AT+TCPLKB"]
-                write_success(t("OPT_REACT_DONE", final_tcp))
+                    recheck = invoke_foobot_at_session(target_ip, ["AT+TCPLKB"], show_verbose=True)
+                    if "+ok" in recheck.get("AT+TCPLKB", ""):
+                        verify_tcp_outcome = recheck["AT+TCPLKB"]
+
+                if "+ok" in write_outcome and "+ok=on" in verify_tcp_outcome:
+                    write_success(t("OPT2_OK_1", write_outcome))
+                    write_success(t("OPT2_OK_2", verify_dns_outcome))
+                    write_success(t("OPT2_OK_3", verify_sock_outcome))
+                    write_success(t("OPT2_OK_4", verify_tcp_outcome))
+                    write_success(t("OPT_REACT_DONE", verify_tcp_outcome))
+                else:
+                    write_error(t("OPT_REACT_ERR", verify_tcp_outcome))
             else:
                 write_info(t("OPT_REACT_CANCEL"))
 

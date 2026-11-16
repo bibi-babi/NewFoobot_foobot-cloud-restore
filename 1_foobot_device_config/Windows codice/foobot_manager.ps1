@@ -1,4 +1,4 @@
-<#
+﻿<#
 ================================================================================
   NAME:         foobot_manager.ps1
   PROJECT:      NewFoobot (Open Source Environmental Monitoring)
@@ -143,10 +143,10 @@ $script:I18N = @{
         "OPT_REACT_DESC_3"   = "e blocca l'uscita su Internet del Foobot rimasto con IP statico (lasciando TCPLKB su 'off')."
         "OPT_REACT_STEPS_HD" = "OPERAZIONI ESEGUITE IN AUTOMATICO DAL PROGRAMMA:"
         "OPT_REACT_STEP_1"   = " 1. Legge dalla memoria del Foobot l'IP del Server DNS gia registrato in precedenza."
-        "OPT_REACT_STEP_2"   = " 2. Attiva temporaneamente il DHCP e riavvia il Foobot (AT+Z per 16 secondi) affinche"
-        "OPT_REACT_STEP_3"   = "    il router di casa registri e autorizzi nuovamente il sensore sulla rete locale."
-        "OPT_REACT_STEP_4"   = " 3. Rileva l'IP locale assegnato dal router e lo blocca nuovamente come IP statico."
-        "OPT_REACT_STEP_5"   = " 4. Ripristina lo stesso IP DNS salvato in precedenza e riapre il collegamento Cloud (TCPLKB=on)."
+        "OPT_REACT_STEP_2"   = " 2. Rileva i parametri di rete attuali (AT+WANN) e fissa la configurazione IP statica"
+        "OPT_REACT_STEP_3"   = "    in memoria Flash NVRAM per impedire al router di sovrascrivere il DNS."
+        "OPT_REACT_STEP_4"   = " 3. Chiude e azzera il vecchio socket TCP Cloud rimasto bloccato."
+        "OPT_REACT_STEP_5"   = " 4. Riapplica automaticamente lo stesso IP DNS salvato e riapre il collegamento Cloud (TCPLKB=on)."
         "OPT_REACT_SAVED_DNS"= "  -> Server DNS registrato rilevato nel Foobot : {0}"
         "OPT_REACT_NO_DNS"   = "ATTENZIONE: Nel Foobot e presente il DNS di fabbrica ({0}). Configura prima il DNS con l'Opzione 2."
         "OPT_REACT_CONFIRM"  = "Confermi l'avvio della riattivazione post-sospensione corrente? [S = Si / N = No]"
@@ -154,6 +154,7 @@ $script:I18N = @{
         "OPT_REACT_DISC"     = "Fase 2/3: Ricerca del Foobot sulla rete locale per verificare l'IP assegnato dal router..."
         "OPT_REACT_RESYNC"   = "Fase 3/3: Fissaggio IP statico, riattivazione DNS ({0}) e apertura connessione Cloud..."
         "OPT_REACT_DONE"     = "RIATTIVAZIONE COMPLETATA! Il Foobot e nuovamente connesso al Cloud (TCPLKB: {0})."
+        "OPT_REACT_ERR"      = "Riattivazione non completata: connessione Cloud non attiva (TCPLKB: {0})."
         "OPT_REACT_CANCEL"   = "Riattivazione annullata. Nessun parametro modificato."
         "OPT3_TITLE"         = "CONFIGURAZIONE NUOVA RETE WI-FI (PAIRING SSID & PASSWORD)"
         "OPT3_INFO1"         = "Questa procedura consente di associare il Foobot a una nuova rete Wi-Fi di casa,"
@@ -311,10 +312,10 @@ $script:I18N = @{
         "OPT_REACT_DESC_3"   = "Internet access for Foobot's static IP (leaving the Cloud connection TCPLKB on 'off')."
         "OPT_REACT_STEPS_HD" = "AUTOMATIC STEPS PERFORMED BY THIS PROGRAM:"
         "OPT_REACT_STEP_1"   = " 1. Reads the previously registered DNS Server IP from Foobot's internal memory."
-        "OPT_REACT_STEP_2"   = " 2. Temporarily enables DHCP and reboots Foobot (AT+Z for 16 seconds) so your home"
-        "OPT_REACT_STEP_3"   = "    router registers and re-authorizes the sensor on the local network."
-        "OPT_REACT_STEP_4"   = " 3. Detects the local IP assigned by the router and locks it again as a static IP."
-        "OPT_REACT_STEP_5"   = " 4. Reapplies the previously saved DNS IP and reopens the Cloud connection (TCPLKB=on)."
+        "OPT_REACT_STEP_2"   = " 2. Reads current network parameters (AT+WANN) and locks the static IP configuration"
+        "OPT_REACT_STEP_3"   = "    in Flash NVRAM to prevent the router from overwriting the DNS."
+        "OPT_REACT_STEP_4"   = " 3. Gracefully closes and clears the previous stuck Cloud TCP socket."
+        "OPT_REACT_STEP_5"   = " 4. Automatically reapplies the saved DNS IP and reopens the Cloud connection (TCPLKB=on)."
         "OPT_REACT_SAVED_DNS"= "  -> Previously saved DNS Server detected in Foobot : {0}"
         "OPT_REACT_NO_DNS"   = "WARNING: Factory DNS ({0}) is currently set in Foobot. Please configure your DNS with Option 2 first."
         "OPT_REACT_CONFIRM"  = "Do you confirm starting the post-power-outage reactivation? [Y = Yes / N = No]"
@@ -322,6 +323,7 @@ $script:I18N = @{
         "OPT_REACT_DISC"     = "Step 2/3: Searching for Foobot on local network to verify the router-assigned IP..."
         "OPT_REACT_RESYNC"   = "Step 3/3: Locking static IP, restoring DNS ({0}) and opening Cloud connection..."
         "OPT_REACT_DONE"     = "REACTIVATION COMPLETED! Foobot is connected to the Cloud again (TCPLKB: {0})."
+        "OPT_REACT_ERR"      = "Reactivation incomplete: Cloud connection is not active (TCPLKB: {0})."
         "OPT_REACT_CANCEL"   = "Reactivation cancelled. No parameters were modified."
         "OPT3_TITLE"         = "CONFIGURE NEW HOME WI-FI NETWORK (SSID & PASSWORD PAIRING)"
         "OPT3_INFO1"         = "This procedure connects your Foobot to a new home Wi-Fi network,"
@@ -1071,72 +1073,84 @@ do {
             $confirm = Read-HostWithPadding (T "OPT_REACT_CONFIRM")
 
             if (Test-IsConfirmed $confirm) {
+                $newDnsIp = $savedDnsVal
                 Write-Host ""
-                Write-InfoMessage (T "OPT_REACT_WAIT")
-                [void](Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @("AT+WANN=DHCP", "AT+Z") -ShowVerboseSteps $true)
-                for ($sec = 1; $sec -le 16; $sec++) {
-                    if ($sec -eq 1 -or $sec % 4 -eq 0) {
-                        Write-StepLog (T "WAIT_REBOOT_STEP" @($sec, 16))
-                    }
-                    Start-Sleep -Seconds 1
-                }
-                Write-Host ""
+                Write-InfoMessage (T "OPT2_PRE_READ")
+                $preRead = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @("AT+WANN") -ShowVerboseSteps $true
+                $wannRaw = $preRead["AT+WANN"]
 
-                Write-InfoMessage (T "OPT_REACT_DISC")
-                $renewedLan = Send-DiscoveryBroadcast -IPAddress "255.255.255.255" -Port $FOOBOT_UDP_PORT -TimeoutMilliseconds 5000
-                if ($renewedLan -ne "TIMEOUT" -and $renewedLan -notlike "ERROR*") {
-                    $rParts = $renewedLan.Split(',')
-                    if ($rParts.Count -ge 1 -and (Test-IsValidIPv4 $rParts[0].Trim())) {
-                        $targetIP = $rParts[0].Trim()
-                        $device.IP = $targetIP
-                        Write-SuccessMessage (T "OPT2_NEW_IP" @($targetIP))
-                    }
-                }
-
-                Write-InfoMessage (T "OPT_REACT_RESYNC" @($savedDnsVal))
-                $wannCheck = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @("AT+WANN") -ShowVerboseSteps $true
-                $staticCmd = $null
-                if ($wannCheck["AT+WANN"] -like "+ok=*") {
-                    $wParts = $wannCheck["AT+WANN"].Substring(4).Split(',')
-                    if ($wParts.Count -ge 4) {
-                        $cIp   = $wParts[1].Trim()
-                        $cMask = $wParts[2].Trim()
-                        $cGw   = $wParts[3].Trim()
-                        if ((Test-IsValidIPv4 $cIp) -and (Test-IsValidIPv4 $cMask) -and (Test-IsValidIPv4 $cGw)) {
-                            $staticCmd = "AT+WANN=static,$cIp,$cMask,$cGw"
+                $cmdStaticWann = $null
+                if ($wannRaw -like "+ok=*") {
+                    $cleanWann = $wannRaw.Substring(4)
+                    $wannParts = $cleanWann.Split(',')
+                    if ($wannParts.Count -ge 4) {
+                        $currIp   = $wannParts[1].Trim()
+                        $currMask = $wannParts[2].Trim()
+                        $currGw   = $wannParts[3].Trim()
+                        if ((Test-IsValidIPv4 $currIp) -and (Test-IsValidIPv4 $currMask) -and (Test-IsValidIPv4 $currGw)) {
+                            $cmdStaticWann = "AT+WANN=static,$currIp,$currMask,$currGw"
+                            Write-InfoMessage (T "OPT2_LAN_DETECTED" @($currIp, $currMask, $currGw))
+                            Write-InfoMessage (T "OPT2_STATIC_APPLY" @($cmdStaticWann))
                         }
                     }
                 }
-                if ($null -eq $staticCmd -and (Test-IsValidIPv4 $targetIP) -and $targetIP -ne $FOOBOT_HOTSPOT_IP) {
-                    $octs = $targetIP.Split('.')
-                    $fbGw = "$($octs[0]).$($octs[1]).$($octs[2]).1"
-                    $staticCmd = "AT+WANN=static,$targetIP,255.255.255.0,$fbGw"
+
+                if ($null -eq $cmdStaticWann -and (Test-IsValidIPv4 $targetIP) -and $targetIP -ne $FOOBOT_HOTSPOT_IP) {
+                    $octets = $targetIP.Split('.')
+                    $fallbackGw = "$($octets[0]).$($octets[1]).$($octets[2]).1"
+                    $cmdStaticWann = "AT+WANN=static,$targetIP,255.255.255.0,$fallbackGw"
+                    Write-InfoMessage (T "OPT2_LAN_DEDUCED" @($targetIP, $fallbackGw))
+                    Write-InfoMessage (T "OPT2_STATIC_APPLY" @($cmdStaticWann))
                 }
 
-                $syncCmds = @()
-                if ($null -ne $staticCmd) { $syncCmds += $staticCmd }
-                $syncCmds += @(
+                Write-Host ""
+                Write-InfoMessage (T "OPT2_WRITE_START")
+                $cmdWriteDns = "AT+WSDNS=$newDnsIp"
+                $cmdVerifyDns = "AT+WSDNS"
+
+                if ($null -ne $cmdStaticWann) {
+                    Write-InfoMessage (T "OPT2_STEP1")
+                    $resWann = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @($cmdStaticWann, "AT+WANN") -ShowVerboseSteps $true
+                    Write-SuccessMessage (T "OPT2_WANN_SAVED" @($resWann['AT+WANN']))
+                    Start-Sleep -Milliseconds 500
+                }
+
+                Write-InfoMessage (T "OPT2_STEP2" @($newDnsIp))
+                $reconnectSocketCmds = @(
                     "AT+TCPDISB=off",
-                    "AT+WSDNS=$savedDnsVal",
+                    $cmdWriteDns,
                     "AT+SOCKB=NONE",
                     "AT+SOCKB=TCP,1883,broker-gw-nc.foobot.io",
                     "AT+TCPDISB=on",
-                    "AT+WANN",
-                    "AT+WSDNS",
+                    $cmdVerifyDns,
                     "AT+SOCKB",
                     "AT+TCPLKB"
                 )
-                $syncRes = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList $syncCmds -ShowVerboseSteps $true
-                $finalTcp = $syncRes["AT+TCPLKB"]
-                if ($finalTcp -notlike "*+ok=on*") {
+                $writeSession = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList $reconnectSocketCmds -ShowVerboseSteps $true
+
+                $writeOutcome = $writeSession[$cmdWriteDns]
+                $verifyDnsOutcome = $writeSession[$cmdVerifyDns]
+                $verifySockOutcome = $writeSession["AT+SOCKB"]
+                $verifyTcpOutcome = $writeSession["AT+TCPLKB"]
+
+                if ($verifyTcpOutcome -notlike "*+ok=on*") {
                     Write-StepLog (T "WAIT_FINAL_TCPLKB")
                     Start-Sleep -Seconds 5
-                    $recheckTcp = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @("AT+TCPLKB") -ShowVerboseSteps $true
-                    if ($recheckTcp["AT+TCPLKB"] -like "*+ok*") {
-                        $finalTcp = $recheckTcp["AT+TCPLKB"]
+                    $recheckSession = Invoke-FoobotAtSession -DeviceIP $targetIP -CommandList @("AT+TCPLKB") -ShowVerboseSteps $true
+                    if ($recheckSession["AT+TCPLKB"] -like "*+ok*") {
+                        $verifyTcpOutcome = $recheckSession["AT+TCPLKB"]
                     }
                 }
-                Write-SuccessMessage (T "OPT_REACT_DONE" @($finalTcp))
+
+                if ($writeOutcome -like "*+ok*" -and $verifyTcpOutcome -like "*+ok=on*") {
+                    Write-SuccessMessage (T "OPT2_OK_1" @($writeOutcome))
+                    Write-SuccessMessage (T "OPT2_OK_2" @($verifyDnsOutcome))
+                    Write-SuccessMessage (T "OPT2_OK_3" @($verifySockOutcome))
+                    Write-SuccessMessage (T "OPT2_OK_4" @($verifyTcpOutcome))
+                    Write-SuccessMessage (T "OPT_REACT_DONE" @($verifyTcpOutcome))
+                } else {
+                    Write-ErrorMessage (T "OPT_REACT_ERR" @($verifyTcpOutcome))
+                }
             } else {
                 Write-InfoMessage (T "OPT_REACT_CANCEL")
             }
