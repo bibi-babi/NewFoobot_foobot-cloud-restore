@@ -1,12 +1,13 @@
 # NewFoobot — Open Source Air Quality Monitor Revival System
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Version: 1.0.1](https://img.shields.io/badge/Version-1.0.1-brightgreen.svg)](CHANGELOG.md)
 [![Python: 3.8+](https://img.shields.io/badge/Python-3.8+-brightgreen.svg)](https://www.python.org/)
 [![PHP: 7.4 | 8.x](https://img.shields.io/badge/PHP-7.4%20|%208.x-777bb4.svg)](https://www.php.net/)
 [![MQTT: v3.1 / v3.1.1](https://img.shields.io/badge/MQTT-v3.1%20|%20v3.1.1-orange.svg)](https://mqtt.org/)
 [![PWA: Ready](https://img.shields.io/badge/PWA-Ready-purple.svg)](4_mobile_app/)
 
-*Read this in other languages: [English](README.md) | [Italiano](README_it.md)*
+*Read this in other languages: [English](README.md) | [Italiano](README_it.md) — [Changelog](CHANGELOG.md)*
 
 > **Official Interactive Documentation & Setup Guide:**  
 > 🌐 **[http://newfoobot-restart.barbaralerici.net/](http://newfoobot-restart.barbaralerici.net/)**

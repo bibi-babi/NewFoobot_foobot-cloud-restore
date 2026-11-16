@@ -1,12 +1,13 @@
 # NewFoobot — Sistema Open Source per il Recupero dei Monitor di Qualità dell'Aria
 
 [![License: GPL v3](https://img.shields.io/badge/Licenza-GPLv3-blue.svg)](LICENSE)
+[![Versione: 1.0.1](https://img.shields.io/badge/Versione-1.0.1-brightgreen.svg)](CHANGELOG.md)
 [![Python: 3.8+](https://img.shields.io/badge/Python-3.8+-brightgreen.svg)](https://www.python.org/)
 [![PHP: 7.4 | 8.x](https://img.shields.io/badge/PHP-7.4%20|%208.x-777bb4.svg)](https://www.php.net/)
 [![MQTT: v3.1 / v3.1.1](https://img.shields.io/badge/MQTT-v3.1%20|%20v3.1.1-orange.svg)](https://mqtt.org/)
 [![PWA: Pronta](https://img.shields.io/badge/PWA-Pronta-purple.svg)](4_mobile_app/)
 
-*Read this in other languages: [English](README.md) | [Italiano](README_it.md)*
+*Leggi in altre lingue: [English](README.md) | [Italiano](README_it.md) — [Registro Modifiche](CHANGELOG.md)*
 
 > **Guida Ufficiale Interattiva e Documentazione Passo-Passo:**  
 > 🌐 **[http://newfoobot-restart.barbaralerici.net/](http://newfoobot-restart.barbaralerici.net/)**
