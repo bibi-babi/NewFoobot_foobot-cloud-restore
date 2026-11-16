@@ -674,7 +674,7 @@ function maybe_check_offline_email_alert(PDO $pdo) {
 }
 
 // Esecuzione diretta da URL o da CLI
-$is_cli = (php_sapi_name() === 'cli');
+$is_cli = (php_sapi_name() === 'cli' || (empty($_SERVER['REMOTE_ADDR']) && empty($_SERVER['HTTP_HOST'])));
 
 if ($is_cli) {
     $pdo_cli = get_db_connection();
@@ -688,9 +688,25 @@ if ($is_cli) {
         }
     }
 } elseif ((basename($_SERVER['SCRIPT_FILENAME'] ?? '')) === 'cron_events.php') {
-    $provided_key = $_GET['key'] ?? ($_SERVER['HTTP_X_API_KEY'] ?? '');
+    $headers_cron = function_exists('getallheaders') ? array_change_key_case(getallheaders(), CASE_LOWER) : [];
+    $candidate_keys = [
+        $headers_cron['x-api-key'] ?? '',
+        $_SERVER['HTTP_X_API_KEY'] ?? '',
+        $_GET['key'] ?? '',
+        $_GET['api_key'] ?? '',
+        $_POST['key'] ?? '',
+        $_POST['api_key'] ?? ''
+    ];
     $is_logged_admin = is_admin_user();
-    $key_matches = (defined('API_SECRET_KEY') && API_SECRET_KEY !== '' && hash_equals((string)API_SECRET_KEY, (string)$provided_key));
+    $key_matches = false;
+    if (defined('API_SECRET_KEY') && API_SECRET_KEY !== '') {
+        foreach ($candidate_keys as $cand) {
+            if ($cand !== '' && hash_equals((string)API_SECRET_KEY, (string)$cand)) {
+                $key_matches = true;
+                break;
+            }
+        }
+    }
 
     if (!$is_logged_admin && !$key_matches) {
         http_response_code(403);

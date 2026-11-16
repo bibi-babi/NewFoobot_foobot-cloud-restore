@@ -107,7 +107,7 @@ def trigger_cpanel_offline_alert(cron_url):
     """Esegue una singola chiamata mirata a cron_events.php su cPanel per inviare l'email di allerta."""
     try:
         headers = {"X-Api-Key": API_KEY, "User-Agent": "NewFoobot-OracleBridge/3.0"}
-        resp = requests.get(f"{cron_url}?key={API_KEY}", headers=headers, timeout=15)
+        resp = requests.get(cron_url, params={"key": API_KEY}, headers=headers, timeout=15)
         if resp.status_code == 200:
             data = resp.json()
             alert_res = data.get("offline_alert_result")
@@ -115,6 +115,8 @@ def trigger_cpanel_offline_alert(cron_url):
                 logging.info("[ALLERTA DISCONNESSIONE] Email inviata con successo da cPanel: %s", alert_res.get("message"))
             else:
                 logging.info("[ALLERTA DISCONNESSIONE] Risposta cPanel: %s", resp.text.strip())
+        else:
+            logging.warning("[ALLERTA DISCONNESSIONE] Risposta HTTP anomala da cPanel [%d]: %s", resp.status_code, resp.text.strip())
     except Exception as err:
         logging.error("Errore durante la chiamata ad allerta cron cPanel (%s): %s", cron_url, err)
 
