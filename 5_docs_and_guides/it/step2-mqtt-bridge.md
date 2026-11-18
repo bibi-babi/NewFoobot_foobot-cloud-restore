@@ -128,6 +128,35 @@ Ora che la rete VCN &egrave; pronta, dalla sezione **Computazione → Istanze** 
 
             Elenco Istanze di calcolo: la macchina &egrave; attiva (In esecuzione) con il suo IP pubblico dedicato visibile nella colonna. Da qui si clicca anche su Crea istanza per iniziare.
 
+<details>
+<summary><strong>Guida: come capire la forma gratuita (Always Free) accettata nella tua area</strong></summary>
+
+Oracle Cloud gestisce oltre 48 datacenter in tutto il mondo (Europa, Nord America, Sud America, Asia e Oceania). La disponibilit&agrave; delle forme gratuite **non &egrave; identica in tutte le regioni**:
+
+1. **Regioni Storiche vs Regioni di Nuova Apertura**:
+   - **Datacenter storici (es. Milano, Francoforte, Amsterdam, Londra, Ashburn, Phoenix)**: dispongono sia del vecchio hardware AMD x86 (`VM.Standard.E2.1.Micro`) sia del moderno hardware Ampere ARM (`VM.Standard.A1.Flex`).
+   - **Datacenter recenti (es. Torino `eu-turin-1`, Madrid, ecc.)**: essendo stati costruiti con hardware di ultima generazione, il vecchio tipo E2 non &egrave; mai stato installato. A Torino, ad esempio, **l'unica forma Always Free esistente e abilitata &egrave; `VM.Standard.A1.Flex` (Ampere ARM)**. Qualsiasi tentativo di selezionare forme E2 o immagini non-ARM in queste regioni verr&agrave; respinto da Oracle.
+
+2. **Come scoprire con certezza le forme gratuite disponibili per il tuo account**:
+   - **Dall'interfaccia grafica (Metodo rapido)**: nella schermata di creazione istanza, clicca su *Modifica forma* e metti la spunta sulla casella **Idoneo per Always Free** (*Always Free Eligible*). Oracle interrogher&agrave; istantaneamente il datacenter della tua Home Region e mostrer&agrave; solo le forme gratuite realmente disponibili.
+   - **Il trucco del Dominio di Disponibilit&agrave; (AD)**: nelle grandi aree multi-datacenter (come negli Stati Uniti ad Ashburn o Phoenix), Oracle documenta che la forma `E2.1.Micro` pu&ograve; essere allocata in uno solo dei 3 domini (es. solo in `AD-1`). Se non la vedi, prova a selezionare `AD-2` o `AD-3` nello Step 1.
+   - **Da Cloud Shell (Metodo per utenti avanzati)**: clicca sull'icona del terminale `>_` in alto a destra nel portale Oracle e digita:
+     ```bash
+     oci compute shape list --query "data[?contains(\"billing-types\", 'ALWAYS_FREE')].shape" --output table
+     ```
+     Oracle risponder&agrave; mostrando in tempo reale le forme Always Free attive nella tua specifica regione.
+
+3. **La Regola d'Oro: abbinamento obbligatorio tra Forma e Immagine Sistema Operativo**:
+   Se la forma gratuita della tua area &egrave; basata su processore ARM, l'immagine del sistema operativo Ubuntu **deve obbligatoriamente essere compilata per architettura ARM (aarch64)**:
+   - Se usi **`VM.Standard.A1.Flex`** (Ampere ARM &mdash; obbligatoria a Torino): scegli **Canonical Ubuntu 24.04 (aarch64)**.
+   - Se usi **`VM.Standard.E2.1.Micro`** (AMD x86 &mdash; es. Milano o Francoforte): scegli **Canonical Ubuntu 24.04 Minimal (x86_64)**.
+
+   *Nota:* il software Bridge del nostro progetto (`bridge.py`) &egrave; scritto in puro Python standard e gira in modo identico e nativo al 100% sia su processori ARM64 che su x86_64, senza alcuna modifica.
+
+Documentazione ufficiale Oracle: [Risorse Always Free di Oracle Cloud Infrastructure](https://docs.oracle.com/it-it/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+
+</details>
+
 La console di Oracle ti guider&agrave; attraverso una sequenza a 5 schermate consecutive (cliccando sul pulsante **Avanti** al termine di ciascuna):
 
         

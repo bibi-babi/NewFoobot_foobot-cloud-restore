@@ -128,6 +128,35 @@ Now that the VCN network is ready, from the **Compute → Instances** section of
 
             Compute Instances list: the virtual machine is active (Running) with its dedicated public IP visible in the table. Click Create instance here to get started.
 
+<details>
+<summary><strong>Guide: how to identify the supported Always Free shape in your region</strong></summary>
+
+Oracle Cloud operates over 48 datacenters across the globe (Europe, North America, South America, Asia, and Oceania). The availability of Always Free compute shapes **varies depending on your region**:
+
+1. **Established Regions vs. Newer Datacenters**:
+   - **Established datacenters (e.g., Milan, Frankfurt, Amsterdam, London, Ashburn, Phoenix)**: host both legacy AMD x86 hardware (`VM.Standard.E2.1.Micro`) and modern Ampere ARM hardware (`VM.Standard.A1.Flex`).
+   - **Newer regions (e.g., Turin `eu-turin-1`, Madrid, etc.)**: were deployed with next-generation infrastructure, meaning legacy E2 processors were never installed. In Turin, for instance, **the only Always Free shape available is `VM.Standard.A1.Flex` (Ampere ARM)**. Attempting to deploy E2 shapes or non-ARM images in these regions will be rejected by Oracle.
+
+2. **How to determine the exact free shapes in your home region**:
+   - **Using the Web Console (Quickest)**: on the instance creation screen, click *Change shape* and check the box for **Always Free Eligible**. Oracle will query your home region in real time and display only available free shapes.
+   - **Availability Domain (AD) Tip**: in large multi-datacenter regions (such as Ashburn or Phoenix in the US), Oracle notes that `E2.1.Micro` may only reside in one specific AD (e.g., `AD-1`). If not found, switch to `AD-2` or `AD-3` in Step 1.
+   - **Via Cloud Shell (Advanced)**: click the terminal icon `>_` at the top right of the Oracle console and run:
+     ```bash
+     oci compute shape list --query "data[?contains(\"billing-types\", 'ALWAYS_FREE')].shape" --output table
+     ```
+     This outputs the live Always Free shapes registered to your region.
+
+3. **Golden Rule: Shape and Operating System Architecture Matching**:
+   If your region offers an ARM-based shape, the selected Ubuntu operating system image **must be compiled for ARM architecture (aarch64)**:
+   - When using **`VM.Standard.A1.Flex`** (Ampere ARM — e.g. Turin): select **Canonical Ubuntu 24.04 (aarch64)**.
+   - When using **`VM.Standard.E2.1.Micro`** (AMD x86 — e.g. Milan, Frankfurt): select **Canonical Ubuntu 24.04 Minimal (x86_64)**.
+
+   *Note:* our project's Bridge server (`bridge.py`) is written in pure standard Python and runs 100% natively on both ARM64 and x86_64 systems without any code modifications.
+
+Official Oracle Documentation: [Oracle Cloud Infrastructure Always Free Resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm)
+
+</details>
+
 The Oracle console guides you through a 5-step sequence (clicking **Next** at the end of each screen):
 
         
